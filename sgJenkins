@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+
+     parameters 
+     { string(name: 'person', defaultValue: 'shankar', description: '') }
+    environment 
+    {
+        username="shankar"
+    }
+    stages  {
+        stage('run a command') {
+            steps {
+                sh ''' 'date'
+                 'pwd' '''
+            }
+        }
+        stage('Environment variables') {
+            steps {
+                sh ' echo "${BUILD_ID} , ${username}" '
+            }
+        }
+        stage('deploy to test server') {
+            steps {
+                echo 'deployed to test server'
+                sh ' echo "username: ${username} " '
+            }
+        }
+        
+        stage('continue?') {
+                
+                input {
+                    message "should we continue??"
+                    ok "yes we should"
+                }
+            steps {
+                echo 'deployed to test server'
+                sh ' echo "username: ${username} " '
+            }
+        }
+        
+        
+        stage('deploy to prod server') {
+                  environment {
+                        username="local shankar"
+                    }
+            
+            steps {
+                          
+                echo 'deploy to prod server'
+                sh 'echo "local username: ${username}, person : %{person} " '
+            }
+        }
+    }
+    
+    post {
+        always{ echo "i always run even if others fail"}
+        
+        failure{ echo "i run whenever failure happens"}
+        
+        success {echo "i run whenever success happens"}
+    }
+}
